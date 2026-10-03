@@ -24,8 +24,8 @@ android {
         applicationId = "com.project.lol"
         minSdk = 28
         targetSdk = 36
-        versionCode = 17
-        versionName = "1.1.7"
+        versionCode = 18
+        versionName = "1.1.8"
         ndk {
             abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         }
@@ -98,6 +98,10 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.lifecycle.runtime.compose)
     debugImplementation(libs.compose.ui.tooling)
+
+    // Glance (home screen widgets)
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
 
     // Ktor + serialization (YouTube InnerTube client)
     implementation(libs.ktor.client.core)
