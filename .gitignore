@@ -37,4 +37,4 @@ Desktop.ini
 # Logs
 *.log
 
-scripts/
+scripts/*.apk

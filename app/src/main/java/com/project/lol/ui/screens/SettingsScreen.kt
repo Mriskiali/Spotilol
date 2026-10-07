@@ -117,6 +117,14 @@ import com.project.lol.util.LogEntry
 import com.project.lol.util.LogFilter
 import com.project.lol.util.LogLevel
 import com.project.lol.util.Logger
+import com.project.lol.ui.components.SettingAutoSyncTile
+import com.project.lol.ui.components.SettingCrossfadeTile
+import com.project.lol.ui.components.SettingDataSaverTile
+import com.project.lol.ui.components.SettingScrobbleTile
+import com.project.lol.ui.components.SettingSleepTimerTile
+import com.project.lol.ui.components.SettingSmartShuffleTile
+import com.project.lol.ui.components.SettingSponsorBlockTile
+import com.project.lol.ui.components.rememberCrossfadeSetting
 import com.project.lol.util.MarkdownText
 import com.project.lol.webview.helpers.LyricsTheme
 import compose.icons.TablerIcons
@@ -657,6 +665,41 @@ fun SettingsContent(
             }
 
             if (settingsTab == SettingsTab.Content) {
+                SettingSectionCard(
+                    title = stringResource(R.string.ext_section),
+                    icon = TablerIcons.WaveSine,
+                    info = stringResource(R.string.ext_section_info)
+                ) {
+                    val ctx = LocalContext.current
+                    val (crossfadeMs, setCrossfade) = rememberCrossfadeSetting()
+
+                    SettingCrossfadeTile(crossfadeMs = crossfadeMs, onChange = setCrossfade)
+
+                    HorizontalDivider(modifier = Modifier.padding(start = 44.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
+                    SettingDataSaverTile(ctx)
+
+                    HorizontalDivider(modifier = Modifier.padding(start = 44.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
+                    SettingSleepTimerTile(ctx)
+
+                    HorizontalDivider(modifier = Modifier.padding(start = 44.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
+                    SettingSponsorBlockTile(ctx)
+
+                    HorizontalDivider(modifier = Modifier.padding(start = 44.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
+                    SettingSmartShuffleTile(ctx)
+
+                    HorizontalDivider(modifier = Modifier.padding(start = 44.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
+                    SettingScrobbleTile(ctx)
+
+                    HorizontalDivider(modifier = Modifier.padding(start = 44.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
+                    SettingAutoSyncTile(ctx)
+                }
+
                 SettingSectionCard(
                     title = stringResource(R.string.settings_section_offline),
                     icon = TablerIcons.CloudOff

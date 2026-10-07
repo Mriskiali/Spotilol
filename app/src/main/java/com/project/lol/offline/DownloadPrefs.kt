@@ -21,6 +21,8 @@ object DownloadPrefs {
     private const val KEY_FOLDER = "DlFolderUri"
     private const val KEY_FOLDER_HISTORY = "DlFolderHistory"
     private const val KEY_TAGS = "DlTags"
+    private const val KEY_AUTO_SYNC = "AutoSyncOn"
+    private const val KEY_SYNC_IDS = "AutoSyncIds"
 
     const val DEFAULT_SUBFOLDER = "Spotilol"
 
@@ -89,6 +91,33 @@ object DownloadPrefs {
     fun folderDisplayPath(context: Context): String =
         folder(context)?.let { DownloadFolder.displayPath(it) }
             ?: "Music/${subfolder(context)}"
+
+    // ---- Offline auto-sync (see AutoSyncWorker / SyncScheduler) ----
+
+    @JvmStatic
+    fun isAutoSyncEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_AUTO_SYNC, false)
+
+    @JvmStatic
+    fun setAutoSyncEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_AUTO_SYNC, enabled).apply()
+    }
+
+    /** Ids of the playlists/albums the user picked for auto-sync. */
+    @JvmStatic
+    fun syncIds(context: Context): List<String> =
+        prefs(context).getString(KEY_SYNC_IDS, null)
+            ?.split(",")
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
+            ?: emptyList()
+
+    @JvmStatic
+    fun setSyncIds(context: Context, ids: List<String>) {
+        prefs(context).edit()
+            .putString(KEY_SYNC_IDS, ids.map { it.trim() }.filter { it.isNotBlank() }.distinct().joinToString(","))
+            .apply()
+    }
 
     @JvmStatic
     fun writeTags(context: Context): Boolean =

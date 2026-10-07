@@ -3,8 +3,6 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
@@ -75,17 +73,6 @@ dependencies {
     implementation(libs.bouncypkix)
     implementation(libs.security.crypto)
 
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.16.0"))
-    implementation("com.google.firebase:firebase-analytics") {
-        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
-    }
-    implementation("com.google.firebase:firebase-crashlytics") {
-        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
-    }
-    implementation("com.google.firebase:firebase-perf") {
-        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
-    }
 
     // Jetpack Compose
     implementation(platform(libs.compose.bom))
@@ -113,6 +100,12 @@ dependencies {
 
     // NewPipe + YouTube streaming
     implementation(libs.newpipeextractor)
+    implementation(libs.androidxWorkRuntimeKtx)
+    implementation(libs.media3)
+    implementation(libs.media3Dash)
+    implementation(libs.media3Hls)
+    implementation(libs.media3Ui)
+    implementation(libs.media3Session)
     implementation(libs.brotli)
     implementation(libs.okhttp)
 
