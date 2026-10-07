@@ -103,7 +103,6 @@ import androidx.webkit.ProxyController
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import androidx.webkit.WebSettingsCompat
-import com.google.firebase.analytics.FirebaseAnalytics
 import com.project.lol.R
 import com.project.lol.bridge.SpotifyBridge
 import com.project.lol.offline.DownloadManager
@@ -185,7 +184,6 @@ class MainActivity : ComponentActivity() {
 
     private var changelogOnUpdate = false
 
-    private val analytics: FirebaseAnalytics by lazy { FirebaseAnalytics.getInstance(this) }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -196,11 +194,6 @@ class MainActivity : ComponentActivity() {
         }
         super.onCreate(savedInstanceState)
 
-        // Track screen view
-        analytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, Bundle().apply {
-            putString(FirebaseAnalytics.Param.SCREEN_NAME, "MainActivity")
-            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "MainActivity")
-        })
 
         prefs = getSharedPreferences("spotilol_prefs", MODE_PRIVATE)
 
@@ -383,10 +376,6 @@ class MainActivity : ComponentActivity() {
                                 },
                                 navigationIcon = {
                                     IconButton(onClick = {
-                                        analytics.logEvent("open_settings", Bundle().apply {
-                                            putString(FirebaseAnalytics.Param.SCREEN_NAME, "SettingsDialog")
-                                        })
-                                        settingsDialogOpen = true
                                     }) {
                                         Icon(
                                             imageVector = TablerIcons.Menu2,
@@ -678,16 +667,9 @@ class MainActivity : ComponentActivity() {
         serviceEnabledState.value = newValue
         prefs.edit().putBoolean("ServiceOn", newValue).apply()
         if (!newValue) {
-            analytics.logEvent("service_toggle", Bundle().apply {
-                putString("enabled", "off")
-            })
             stopService(Intent(this, MediaNotificationService::class.java))
             serviceStarted = false
             destroyWebView()
-        } else {
-            analytics.logEvent("service_toggle", Bundle().apply {
-                putString("enabled", "on")
-            })
         }
     }
 
@@ -775,10 +757,6 @@ class MainActivity : ComponentActivity() {
         Logger.i(TAG, "sleep timer started: ${minutes}min")
         sleepTimerActive.value = true
         sleepTimerRemainingMs.longValue = totalMs
-
-        analytics.logEvent("sleep_timer_start", Bundle().apply {
-            putString("minutes", minutes.toString())
-        })
 
         webView?.evaluateJavascript("""
             if(window.timerBtn) timerBtn.style.color='var(--spl-accent,#2d6)';
@@ -1414,10 +1392,6 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         Logger.i(TAG, "activity resumed: restoring webview loops")
 
-        analytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, Bundle().apply {
-            putString(FirebaseAnalytics.Param.SCREEN_NAME, "MainActivity")
-            putString(FirebaseAnalytics.Param.SCREEN_CLASS, "MainActivity")
-        })
 
         prefs = getSharedPreferences("spotilol_prefs", MODE_PRIVATE)
         serviceEnabledState.value = prefs.getBoolean("ServiceOn", true)

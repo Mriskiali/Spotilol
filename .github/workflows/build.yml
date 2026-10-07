@@ -25,12 +25,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # google-services.json is required by the Google Services plugin.
-      # A committed stub keeps forks/CI building; replace with the real file
-      # before a release build that needs Firebase.
-      - name: Verify google-services.json
-        run: test -f app/google-services.json || { echo "missing google-services.json"; exit 1; }
-
       - name: Grant execute on gradlew
         run: chmod +x gradlew
 
