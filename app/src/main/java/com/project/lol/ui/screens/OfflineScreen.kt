@@ -5,10 +5,7 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
-import androidx.media3.common.C
-import com.project.lol.service.PlaybackEngine
-import com.project.lol.service.PlaybackEngineListener
-import com.project.lol.service.QueueTrack
+import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -166,25 +163,7 @@ fun OfflineScreen(
     var durationMs by remember { mutableIntStateOf(0) }
     var scrubMs by remember { mutableIntStateOf(-1) }
 
-    val engine = remember { PlaybackEngine(context) }
-    val engineListener = remember {
-        object : PlaybackEngineListener {
-            override fun onTrackChanged(track: QueueTrack?, index: Int, total: Int) {
-                currentIndex = index
-                playerSong = songs.getOrNull(index)
-            }
-            override fun onPlayingChanged(playing: Boolean) { isPlaying = playing }
-            override fun onPositionChanged(posMs: Long, durMs: Long) {
-                positionMs = posMs.toInt()
-                if (durMs > 0) durationMs = durMs.toInt()
-            }
-            override fun onQueueEnd() {
-                isPlaying = false
-                positionMs = 0
-            }
-            override fun onError(error: String) { isPlaying = false }
-        }
-    }
+    val mediaPlayer = remember { MediaPlayer() }
     var searchQuery by remember { mutableStateOf("") }
     var searchFocused by remember { mutableStateOf(false) }
     var searchResults by remember { mutableStateOf<List<OfflineSong>?>(null) }
@@ -233,27 +212,41 @@ fun OfflineScreen(
     }
 
     fun play(index: Int) {
-        val tracks = songs.map { QueueTrack(id=it.id, title=it.title, artist=it.artist, album=it.album, coverUrl=it.coverFile?.absolutePath, streamUrl=it.uri.toString(), durationMs=it.durationSec?.toLong() ?: C.TIME_UNSET) }
-        engine.setQueue(tracks, index, true)
+        playAt(mediaPlayer, context, songs, index, { currentIndex = it }, { playerSong = it }, { isPlaying = it }, { durationMs = it }, { positionMs = it })
         syncService()
     }
 
     fun togglePlayPause() {
-        if (engine.isPlaying()) engine.pause() else engine.play()
+        runCatching {
+            if (mediaPlayer.isPlaying) {
+                mediaPlayer.pause()
+                isPlaying = false
+            } else if (durationMs > 0) {
+                mediaPlayer.start()
+                isPlaying = true
+            }
+        }
         syncService()
     }
 
     fun step(delta: Int) {
         if (songs.isEmpty()) return
-        if (delta > 0) engine.skipToNext() else engine.skipToPrevious()
+        val next = ((currentIndex + delta) % songs.size + songs.size) % songs.size
+        play(next)
     }
 
     fun seekTo(position: Long) {
-        engine.seekTo(position)
+        if (durationMs <= 0) return
+        runCatching { mediaPlayer.seekTo(position.toInt()) }
+        positionMs = position.toInt()
+        OfflineMediaService.instance?.updatePosition(position)
     }
 
     fun stopAndClear() {
-        engine.stop()
+        runCatching {
+            if (mediaPlayer.isPlaying) mediaPlayer.pause()
+            mediaPlayer.reset()
+        }
         isPlaying = false
         currentIndex = -1
         positionMs = 0
@@ -321,20 +314,28 @@ fun OfflineScreen(
                 runCatching { context.stopService(Intent(context, OfflineMediaService::class.java)) }
             }
 
-            override fun onSeekTo(position: Long) { engine.seekTo(position) }
+            override fun onSeekTo(position: Long) = seekTo(position)
         }
         OfflineMediaService.controller = ctrl
         onDispose {
             if (OfflineMediaService.controller === ctrl) OfflineMediaService.controller = null
-            engine.release()
+            runCatching { mediaPlayer.release() }
             runCatching { context.stopService(Intent(context, OfflineMediaService::class.java)) }
         }
     }
 
-    DisposableEffect(engine) {
-        engine.setListener(engineListener)
-        engine.startTicker()
-        onDispose { engine.setListener(null) }
+    DisposableEffect(mediaPlayer) {
+        mediaPlayer.setOnCompletionListener {
+            val index = currentIndex
+            if (index in 0 until songs.lastIndex) {
+                play(index + 1)
+            } else {
+                isPlaying = false
+                positionMs = 0
+                OfflineMediaService.instance?.updatePlaying(false, 0)
+            }
+        }
+        onDispose { }
     }
 
     LaunchedEffect(Unit) {
@@ -344,7 +345,7 @@ fun OfflineScreen(
 
     LaunchedEffect(isPlaying, currentIndex) {
         while (isPlaying) {
-            positionMs = engine.currentPositionMs().toInt()
+            runCatching { positionMs = mediaPlayer.currentPosition }
             OfflineMediaService.instance?.updatePosition(positionMs.toLong())
             delay(500.milliseconds)
         }
@@ -565,7 +566,7 @@ fun OfflineScreen(
                                     isCurrent = index == currentIndex,
                                     onClick = {
                                         if (index == currentIndex) {
-                                            if (durationMs > 0 || isPlaying) {
+                                            if (durationMs > 0 || mediaPlayer.isPlaying) {
                                                 togglePlayPause()
                                             } else {
                                                 play(index)
@@ -789,6 +790,33 @@ fun OfflineScreen(
             }
         }
     }
+
+private fun playAt(
+    mediaPlayer: MediaPlayer,
+    context: android.content.Context,
+    songs: List<OfflineSong>,
+    index: Int,
+    setCurrentIndex: (Int) -> Unit,
+    setPlayerSong: (OfflineSong) -> Unit,
+    setPlaying: (Boolean) -> Unit,
+    setDuration: (Int) -> Unit,
+    setPosition: (Int) -> Unit,
+) {
+    val song = songs.getOrNull(index) ?: return
+    runCatching {
+        mediaPlayer.reset()
+        mediaPlayer.setDataSource(context, song.uri)
+        mediaPlayer.prepare()
+        mediaPlayer.start()
+        setCurrentIndex(index)
+        setPlayerSong(song)
+        setPlaying(true)
+        setDuration(mediaPlayer.duration)
+        setPosition(0)
+    }.onFailure {
+        setPlaying(false)
+    }
+}
 
 @Composable
 private fun CompactIconButton(

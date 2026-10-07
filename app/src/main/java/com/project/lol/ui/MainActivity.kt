@@ -194,7 +194,6 @@ class MainActivity : ComponentActivity() {
         }
         super.onCreate(savedInstanceState)
 
-
         prefs = getSharedPreferences("spotilol_prefs", MODE_PRIVATE)
 
         // Enhanced features: scrobbling, alarm-backed sleep timer, offline auto-sync.
@@ -376,6 +375,7 @@ class MainActivity : ComponentActivity() {
                                 },
                                 navigationIcon = {
                                     IconButton(onClick = {
+                                        settingsDialogOpen = true
                                     }) {
                                         Icon(
                                             imageVector = TablerIcons.Menu2,
@@ -670,6 +670,7 @@ class MainActivity : ComponentActivity() {
             stopService(Intent(this, MediaNotificationService::class.java))
             serviceStarted = false
             destroyWebView()
+        } else {
         }
     }
 
@@ -1391,7 +1392,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         Logger.i(TAG, "activity resumed: restoring webview loops")
-
 
         prefs = getSharedPreferences("spotilol_prefs", MODE_PRIVATE)
         serviceEnabledState.value = prefs.getBoolean("ServiceOn", true)
