@@ -239,8 +239,41 @@ class SpotifyBridge(activityRef: WeakReference<Activity>) {
         DownloadManager.cancelAll()
     }
 
-    @Suppress("unused")
+    /** SponsorBlock: push downloaded segment list to the page's hook. */
     @JavascriptInterface
+    fun loadSponsorSegments(videoId: String?) {
+        val vid = videoId?.takeIf { it.length == 11 } ?: return
+        Thread {
+            try {
+                val segs = kotlinx.coroutines.runBlocking {
+                    com.project.lol.util.SponsorBlockClient.segments(vid)
+                }
+                val js = "if(window.__splSbReceive) window.__splSbReceive(${com.project.lol.util.SponsorBlockClient.toJsArray(segs)});"
+                activityRef.get()?.runOnUiThread {
+                    try {
+                        com.project.lol.service.MediaNotificationService.webView
+                            ?.evaluateJavascript(js, null)
+                    } catch (_: Exception) {}
+                }
+            } catch (e: Exception) {
+                Logger.e(TAG, "loadSponsorSegments failed", e)
+            }
+        }.apply { isDaemon = true }.start()
+    }
+
+    /** Scrobble: page reports position so the manager can record at threshold. */
+    @JavascriptInterface
+    fun scrobblePosition(trackId: String?, positionMs: Long, durationMs: Long) {
+        if (trackId.isNullOrBlank() || durationMs <= 0) return
+        com.project.lol.stats.ScrobbleManager.onPosition(trackId, positionMs, durationMs)
+    }
+
+    @JavascriptInterface
+    fun scrobbleStart(trackId: String?) {
+        if (trackId.isNullOrBlank()) return
+        com.project.lol.stats.ScrobbleManager.onTrackStart(trackId)
+    }
+
     fun nFetch(url: String, optsJson: String?): String {
         val errorResult = { e: Exception ->
             try {

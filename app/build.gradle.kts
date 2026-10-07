@@ -113,6 +113,12 @@ dependencies {
 
     // NewPipe + YouTube streaming
     implementation(libs.newpipeextractor)
+    implementation(libs.androidxWorkRuntimeKtx)
+    implementation(libs.media3)
+    implementation(libs.media3Dash)
+    implementation(libs.media3Hls)
+    implementation(libs.media3Ui)
+    implementation(libs.media3Session)
     implementation(libs.brotli)
     implementation(libs.okhttp)
 

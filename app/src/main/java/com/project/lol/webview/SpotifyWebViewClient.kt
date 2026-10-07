@@ -12,6 +12,7 @@ import android.webkit.WebViewClient
 import androidx.webkit.ScriptHandler
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import com.project.lol.util.DataSaverManager
 import com.project.lol.webview.helpers.*
 import com.project.lol.webview.injections.*
 import java.io.ByteArrayInputStream
@@ -163,6 +164,7 @@ class SpotifyWebViewClient(
             add(PowerSave.CONTENT)
             add(SettingsFix.CONTENT)
             add(VideoPark.CONTENT)
+            add(DataSaverHook.CONTENT)
         }
         return parts.joinToString("\n") { "try{\n$it\n}catch(e){}" }
     }
@@ -223,6 +225,12 @@ class SpotifyWebViewClient(
             view.post { view.evaluateJavascript("AndBridge.deferMessage('adblock')", null) }
             val silent = view.context.assets?.open("silent.mp3") ?: return null
             return WebResourceResponse("audio/mpeg", null, silent)
+        }
+
+        if (DataSaverManager.shouldBlockRequest(view.context, url)) {
+            return WebResourceResponse("text/plain", "utf-8", 200, "OK",
+                mapOf("Access-Control-Allow-Origin" to "*"),
+                ByteArrayInputStream(ByteArray(0)))
         }
 
         val useProxy = view.context.getSharedPreferences("spotilol_prefs", 0)
@@ -379,6 +387,8 @@ class SpotifyWebViewClient(
             append(QueueAutoClose.CONTENT)
             append(LibraryAutoClose.CONTENT)
             append(PlaylistSort.CONTENT)
+            append(DataSaverHook.CONTENT)
+            append(SponsorBlockHook.CONTENT)
             if (playerMode == "spotilol") {
                 append(SpotilolPlayer.CONTENT)
             }

@@ -360,4 +360,24 @@
     <string name="widget_action_repeat">Repeat</string>
     <string name="widget_empty_title">Spotilol</string>
     <string name="widget_empty_subtitle">Open the app to start playing</string>
+    <!-- Enhanced features (crossfade/gapless, data saver, auto-sync, scrobble, smart shuffle, sleep timer, SponsorBlock) -->
+    <string name="ext_section">Playback &amp; Data</string>
+    <string name="ext_section_info">Gapless playback, crossfade, data saver and scrobbling</string>
+    <string name="ext_crossfade">Gapless &amp; crossfade</string>
+    <string name="ext_crossfade_gapless">Gapless (native, no overlap)</string>
+    <string name="ext_crossfade_seconds">Crossfade %1\$d s (true overlap)</string>
+    <string name="ext_data_saver">Data saver</string>
+    <string name="ext_data_saver_subtitle">Low-res artwork, low-bitrate audio, block telemetry</string>
+    <string name="ext_data_saver_quality">Artwork quality</string>
+    <string name="ext_auto_sync">Auto-sync downloads</string>
+    <string name="ext_auto_sync_subtitle">Re-download Liked Songs and playlists on WiFi + charging</string>
+    <string name="ext_scrobble">Scrobble to Last.fm / ListenBrainz</string>
+    <string name="ext_scrobble_subtitle">Record plays after 50% or 4 minutes</string>
+    <string name="ext_smart_shuffle">Smart shuffle</string>
+    <string name="ext_smart_shuffle_subtitle">Blend recommendations into the queue instead of pure random</string>
+    <string name="ext_sleep_timer">Sleep timer</string>
+    <string name="ext_sleep_timer_subtitle">Tap to start a 30 minute timer</string>
+    <string name="ext_sleep_timer_active">Stops in %1\$d min</string>
+    <string name="ext_sponsorblock">SponsorBlock</string>
+    <string name="ext_sponsorblock_subtitle">Skip sponsor, intro and outro segments</string>
 </resources>

@@ -203,6 +203,14 @@ class MainActivity : ComponentActivity() {
         })
 
         prefs = getSharedPreferences("spotilol_prefs", MODE_PRIVATE)
+
+        // Enhanced features: scrobbling, alarm-backed sleep timer, offline auto-sync.
+        com.project.lol.stats.ScrobbleManager.init(this)
+        com.project.lol.util.SleepTimerManager.rescheduleIfNeeded(this)
+        if (prefs.getBoolean("AutoSyncOn", false)) {
+            com.project.lol.offline.SyncScheduler.setEnabled(this, true)
+        }
+
         changelogOnUpdate = ChangelogPrefs.shouldShowOnUpdate(this)
         val useProxy = prefs.getString("ConnectionMode", "normal") == "proxy"
 
