@@ -32,6 +32,28 @@
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />
 
+        <!-- Firebase is stubbed in this build (invalid API key) so every
+             Firebase SDK that auto-initializes on a background thread must be
+             switched off, otherwise e.g. firebase-perf's TransportManager
+             crashes with IllegalArgumentException "Please set a valid API key".
+             Replace the stub google-services.json with a real one before any
+             Firebase-backed release build, then drop these four flags. -->
+        <meta-data
+            android:name="firebase_performance_collection_enabled"
+            android:value="false"
+            tools:replace="android:value" />
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false"
+            tools:replace="android:value" />
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false"
+            tools:replace="android:value" />
+        <meta-data
+            android:name="firebase_messaging_auto_init_enabled"
+            android:value="false" />
+
         <activity
             android:name=".ui.SplashActivity"
             android:exported="true"
